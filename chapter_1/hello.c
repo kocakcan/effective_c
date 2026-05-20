@@ -2,7 +2,9 @@
 #include <stdlib.h>
 
 int main(void) {
-	puts("Hello, world!");
+	if (puts("Hello, world!") == EOF) {
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }
 /***
@@ -42,4 +44,32 @@ int main(void) {
  * as successful. Code following a return statement is dead code that never executes. This
  * is indicated by single line comments in the revised program. Everything following // is
  * ignored by the compiler.
+ *
+ * Formatted Output
+ *
+ * The puts function is a nice, simple way to write a string to stdout, but eventually you'll
+ * need to print formatted output using the printf function--for example, to print arguments o-
+ * ther than strings. The printf function takes a format string that defines how the output is
+ * formatted, followed by a variable number of arguments that are the actual values you want to
+ * print. For example, if you want to use the printf function to print our Hello, world!, you
+ * could write it like this:
+ *
+ * 	printf("%s\n", "Hello, world!");
+ * The first argument is the format string "%s\n". The %s is a conversion specification that in-
+ * structs the printf function to read the second argument (a string literal) and print it to st-
+ * dout. The \n is an alphabetic escape sequence used to represent nongraphic characters, and t-
+ * ells the function to include a new line after the string. Without the newline sequence, the ne-
+ * xt characters printed (likely the command prompt) would appear on the same line. This function
+ * call outputs the following:
+ *
+ * 	Hello, world!
+ * Take care not to pass user-supplied data as part of the first argument to the printf function,
+ * because doing so can result in a formatted output security vulnerability.
+ *
+ * The simplest way to output a string is to use the puts function, as previously shown. If you do
+ * use printf instead of puts in the revised version of the "Hello, world!" program, you'll find 
+ * it no longer works, because the printf function returns status differently than the puts func-
+ * tion. The printf function returns the number of characters printed if it's successful, or a ne-
+ * gative value if an output or encoding error occurred. You can try modifying the "Hello, world!"
+ * program to use the printf function as an exercise.
  */
