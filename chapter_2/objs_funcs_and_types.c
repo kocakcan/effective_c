@@ -115,19 +115,57 @@
 * values in main during the second call to printf. The goal of the program was to swap
 * the values of these two objects. By testing the program, we've discovered it has a
 * bug, or defect.
+*
+* Swapping Values (Second Attempt)
+*
+* To repair this bug, you can use pointers to rewrite the swap function. We use the ind
+* irection (*) operator to both declare pointers and dereference them, as shown in List
+* ing 2-3.
+*
+* 	void swap(int *pa, int *pb) {
+*		int t = *pa;
+*		*pa = *pb;
+*		*pb = t;
+*		return;
+*	}
+*	Listing 2-3: The revised swap function using pointers
+* When used in a function declaration or definition, * acts part of a pointer declarato
+* r indicating that the parameter is a pointer to an object or function of a specific t
+* ype. In the rewritten swap function, we specify two parameters, pa and pb, and declar
+* e them both as type pointers to int.
+* 	When you use the unary * operator in expressions within the function, the unary
+* * operator dereferences the pointer to the object. For example, consider the followin
+* g assignment:
+*
+* 	pa = pb;
+* This replaces the value of the pointer pa with the value of the pointer pb. Now consi
+* der the actual assignment in the swap function:
+*
+* 	*pa = *pb;
+* This dereferences the pointer pb, reads the referenced value, dereferences the pointe
+* r pa, then overrides the value at the location referenced by pa with the value refere
+* nced by pb.
+* 	When you call the swap function in main, you must also place an ampersand (&) c
+* character before each variable name:
+*
+* 	swap(&a, &b);
+* The unary & is the address-of operator, which generates a pointer to its operand. Thi
+* s change is necessary because the swap function now accepts pointers to objects of ty
+* pe int as parameters instead of simply values of type int.
  */
 #include <stdio.h>
 
-void swap(int a, int b) {
-	a ^= b;
-	b ^= a;
-	a ^= b;
-	printf("swap: a = %d, b = %d\n", a, b);
+void swap(int *pa, int *pb) {			// pa -> a: 21	pb -> b: 17
+	int t = *pa;				// t: 21
+	*pa = *pb;				// pa -> a: 17	pb -> b: 21
+	*pb = t;				// pa -> a: 17	pb -> b: 21
+	return;
 }
 
 int main(void) {
-	int a = 21, b = 17;
-	swap(a, b);
-	printf("main: a = %d, b = %d\n", a, b);
+	int a = 21;				// a: 21
+	int b = 17;				// b: 17
+	swap(&a, &b);
+	printf("a = %d, b = %d\n", a, b);	// a: 17	b: 21
 	return 0;
 }
