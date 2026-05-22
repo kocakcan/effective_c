@@ -152,6 +152,112 @@
 * The unary & is the address-of operator, which generates a pointer to its operand. Thi
 * s change is necessary because the swap function now accepts pointers to objects of ty
 * pe int as parameters instead of simply values of type int.
+*
+* Scope
+*
+* Objects, functions, macros and other C language identifiers have scope that delimits
+* the contiguous region where they can be accessed. C has four types of scope: file, b
+* lock, function prototype, and function.
+*
+* 	The scope of an object or function identifier is determined by where it is decl
+* ared. If the declaration is outside any block or parameter list, the identifier has f
+* ile scope, meaning the scope is the entire text file in which it appears as well as a
+* ny files included after that point.
+* 	If the declaration appears inside a block or within the list of parameters, it 
+* has block scope, meaning that the identifier it declares is accessbile only within th
+* e block. The identifiers for a and b from Listing 2-4 have block scope and can be use
+* d to refer to only these variables within the code block in the main function in whic
+* h they're defined.
+* 	If the declaration appears within the list of parameter declarations in a funct
+* ion prototype (not part of a function definition), the identifier has function protot
+* ype scope, which terminates at the end of the function declarator. Function scope is
+* the area between the opening { of a function definition and its closing }. A label n
+* ame is the only kind of identifier that has function scope. Labels are identifiers f
+* ollowed by a colon and identify a statement in a function to which control may be tr
+* ansferred.
+* 	Scopes can be nested, with inner and outer scopes. For example, you can have a
+* block scope inside another block scope, and every block scope is defined within a fi
+* le scope. The inner scope has access to the outer scope, but not vice versa. As the n
+* ame implies, any inner scope must be completely contained within the outer scopes th
+* at encompass it.
+* 	If you declare the same identifier in both the inner scope and an outer scope,
+* the identifier declared in the outer scope is hidden by the identifier within the in
+* ner scope, which takes precedence. In this case, naming the identifier will refer to
+* the object in the inner scope; the object from the outer scope is hidden and cannot 
+* be referenced by its name. The easiest way to prevent this from becoming a problem i
+* s to use different names. Listing 2-5 demonstrates different scopes and how identifi
+* ers declared in inner scopes can hide identifiers declared in outer scopes.
+*
+* 	int j;			// file scope of j begins
+*
+* 	void f(int i) {		// block scope of i begins
+*		int j = 1;	// block scope of j begins; hides file-scope j
+*		i++;		// i refers to the function parameter
+*		for (int i = 0; i < 2; i++) {	// block scope of loop-local i begins
+*			int j = 2;	// block scope of inner j begins; hides outer j
+*			printf("%d\n", j);	// inner j is in scope, prints 2
+*		}
+*		printf("%d\n", j);	// the outer j is in scope, prints 1
+*	}	// the block scope of i and j ends
+*
+*	void g(int j);	// j has function prototype scope, hides file-scope j
+*	Listing 2-5: Scope
+* 	There is nothing wrong with this code, provided the comments accurately descri
+* be your intent. Best practices is to use different names for different identifiers t
+* o avoid confusion, which leads to bugs. Using short names such as i and j is fine fo
+* r identifiers with small scopes. Identifiers in large scopes should have longer, des
+* criptive names that are unlikely to be hidden in nested scopes. Some compilers will 
+* warn about hidden identifiers.
+*
+* Storage Duration
+*
+* Objects have a storage duration that determines their lifetime. Altogether, four sto
+* rage duration are available: automatic, static, thread, and allocated. Objects of au
+* tomatic storage duration are declared within a block or as a function parameter. The
+* lifetime of these objects begins when the block in which they're declared begins exe
+* cution, and ends when execution of the block ends. If the block is entered recursive
+* ly, a new object is created each time, each with its own storage.
+*
+* NOTE: Scope and lifetime are entirely different concepts. Scope applies to identifie
+* rs, whereas lifetime applies to objects. The scope of an identifier is the code regi
+* on where the object denoted by the identifier can be accessed by its name. The lifet
+* ime of an object is the time period for which the object exists.
+*
+* 	Objects declared in file scope have static storage duration. The lifetime of t
+* hese objects is the entire execution of the program, and their stored value is initi
+* alized prior to program startup. You can also declare a variable within a block scop
+* e to have static storage duration using the storage-class specifier static, as shown
+* in the counting example in Listing 2-6. These objects persist after the function has
+* exited.
+*
+* 	void increment(void) {
+*		static unsigned int counter = 0;
+*		counter++;
+*		printf("%d\n", counter);
+*	}
+*
+*	int main(void) {
+*		for (int i = 0; i < 5; i++) {
+*			increment();
+*		}
+*		return 0;
+*	}
+*	Listing 2-6: A counting example
+* 	This program outputs 1 2 3 4 5. We initialize the static variable counter to 0
+* once at program startup, and increment it each time the increment function is called
+* . The lifetime of counter is the entire execution of the program, and it will retain
+* its last-stored value throughout its lifetime. You could achieve the same behaviour 
+* by declaring counter with file scope. However, it is good software engineering pract
+* ice to limit the scope of an object wherever possible.
+* 	Static objects must be initialized with a constant value and not a variable:
+* 	int *func(int i) {
+*		const int j = i;	// ok
+*		static int k = j;	// error
+*		return &k;
+*	}
+* A constant value refers to literal constants (for example, 1, 'a', 0xFF), enum membe
+* rs, and the results of operators such as alignof or sizeof; not const-qualified obje
+* cts.
  */
 #include <stdio.h>
 
