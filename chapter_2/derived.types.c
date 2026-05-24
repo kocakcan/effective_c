@@ -175,6 +175,225 @@
  * sigline_p to the address of the sigline object. In the final three lines of
  * the program, we indirectly access the members of the sigline object by using
  * the -> operator through the sigline_p pointer.
+ *
+ * Unions
+ *
+ * Union types are similar to structures, except that the memory used by the
+ * member objects overlaps. Unions can contain an object of one type at one
+ * time, and an object of a different type at a different time, but never both
+ * objects at the same time, and are primarily used to save memory. Listing 2-11
+ * shows the union u that contains three structures: n, ni, and nf. This union
+ * might be used in a tree, graph, or other data structure that has some nodes
+ * that contain integer values (ni) and other nodes that containing
+ * floating-point values (nf).
+ *
+ *    union {
+ *      struct {
+ *        int type;
+ *      } n;
+ *      struct {
+ *        int type;
+ *        int intnode;
+ *      } ni;
+ *      struct {
+ *        int type;
+ *        double doublenode;
+ *      } nf;
+ *    } u;
+ *    u.nf.type = 1;
+ *    u.nf.doublenode = 3.14;
+ *    Listing 2-11: Unions
+ *
+ *    As with structures, you can access union members via the . operator. Using
+ * a pointer to a union, you can reference its members with the -> operator. In
+ * Listing 2-11, the type member in the nf struct of the union is referenced as
+ * u.nf.type, and the doublenode member is referenced as u.nf.doublenode. Code
+ * that uses this union will typically check the type of the node by examining
+ * the value stored in u.n.type and then accessing either the intnode or
+ * doublenode struct depending on the type. If this had been implemented as a
+ * structure, each node would contain storage for both the intnode and the
+ * doublenode members. The use of a union allows the same storage to be used for
+ * both members.
+ *
+ * Tags
+ *
+ * Tags are special naming mechanism for structs, unions, and enumerations. For
+ * example, the identifier s appearing in the following structure is a tag:
+ *
+ *    struct s {
+ *      // --snip--
+ *    };
+ * By itself, a tag is not a type name and cannot be used to declare a variable.
+ * Instead, you must declare variables of this type as follows:
+ *
+ * struct s v;  // instance of struct s
+ * struct s *p  // pointer to struct s
+ *    The names of unions and enumerations are also tags and not types, meaning
+ * that they cannot be used alone to declare a variable. For example:
+ *
+ * enum day { sun, mon, tue, wed, thu, fri, sat };
+ * day today;         // error
+ * enum day tomorrow; // OK
+ *    The tags of structures, unions, and enumerations are defined in a separate
+ * namespace from ordinary identifiers. This allows a C program to have both a
+ * tag and another identifier with the same spelling in the same scope:
+ *
+ * enum status { ok, fail };  // enumeration
+ * enums status status(void); // function
+ *
+ * You can even declare an object s of type struct s:
+ *
+ * struct s s;
+ * This may not be good practice, but it is valid in C. You can think of struct
+ * tags as type names and define an alias for the tag by using a typedef. Here's
+ * an example:
+ *
+ * typedef struct s { int x; } t;
+ * This now allows you to declare variables of type t instead of struct s. The
+ * tag name in struct, union, and enum is optional, so you can just dispense
+ * with it entirely:
+ *
+ * typedef struct { int x; } t;
+ *    This works fine except in the case of self-referential structures that
+ * contain pointers to themselves:
+ *    struct tnode {
+ *      int count;
+ *      struct tnode *left;
+ *      struct tnode *right;
+ *    };
+ * If you omit the tag on the first line, the compiler may complain because the
+ * referenced structure on lines 3 and 4 has not yet been declared, or because
+ * the whole structure is not used anywhere. Consequently, you have no choice
+ * but to declare a tag for the structure, but you can declare a typedef as
+ * well:
+ *
+ *  typedef struct tnode {
+ *    int count;
+ *    struct tnode *left;
+ *    struct tnode *right;
+ *  } tnode;
+ *
+ *    Most C programmers use a different name for the tag and the typedef, but
+ * the same name works just fine. You can also define this type before the
+ * structure so that you can use it to declare the left and right members that
+ * refer to other objects of type tnode:
+ *
+ * typedef struct tnode tnode;
+ * struct tnode {
+ *    int count;
+ *    tnode *left;
+ *    tnode *right;
+ * } tnode;
+ *
+ *    Type definitions can improve code readability beyond their use with
+ * structures. For example, all three of the following declarations of the
+ * signal function specify the same type:
+ *
+ * typedef void fv(int), (*pfv)(int);
+ * void (*signal(int, void (*)(int)))(int);
+ * fv *signal(int, fv *);
+ * pfv signal(int, pfv);
+ *
+ * Type Qualifiers
+ *
+ * All the types examined so far have been unqualified types. Types can be
+ * qualified by using one or more of the following qualifiers: const, volatile,
+ * and restrict. Each of these qualifiers changes behaviours when accessing
+ * objects of the qualified type.
+ *    The qualified and unqualified versions of types can be used
+ * interchangeably as arguments to functios, return values from functions, and
+ * members of unions.
+ *
+ * Note: The _Atomic type qualifier supports concurrent programs.
+ *
+ * const
+ *
+ * Objects declared with the const qualifier (const-qualified types) are not
+ * modifiable. In particular, they're not assignable but can have constant
+ * initializers. This means objects with const-qualified types can be placed in
+ * read-only memory by the compiler, and any attempt to write to them will
+ * result in a runtime error:
+ *
+ * const int i = 1; // const-qualified int
+ * i = 2;           // error: i is const-qualified
+ *
+ *    It's possible to accidentally convince your compiler to change a
+ * const-qualified object for you. In the following example, we take the address
+ * of a const-qualified object i and tell the compiler that this is actually a
+ * pointer an to int:
+ *
+ * const int i = 1; // object of const-qualified type
+ * int *ip = (int *)&i;
+ * *ip = 2;         // undefined behaviour
+ *
+ *    C does not allow you to cast away the const if the original was declared
+ * as a const-qualified object. This code might appear to work, but it's
+ * defective and may fail later. For example, the compiler might place the
+ * const-qualified object in read-only memory, causing a memory fault when
+ * trying to store a value in the object at runtime.
+ *    C allows you to modify an object that is pointer to by a const-qualified
+ * pointer by casting the const away, provided that the original object was not
+ * declared const.
+ *
+ * int i = 12;
+ * const int j = 12;
+ * const int *ip = &i;
+ * const int *jp = &j;
+ * *(int *)ip = 42;    // ok
+ * *(int *)jp = 42;    // undefined behaviour
+ *
+ * volatile
+ *
+ * Objects of volatile-qualified types serve a special purpose. Static
+ * volatile-qualified objects are used to model memory-mapped input/output
+ * (I/O) ports, and static constant volatile-qualified objects model
+ * memory-mapped input ports such as a real-time clock.
+ *    The values stored in these objects may change without the knowledge of the
+ * compiler. For example, every time the value from a real-time clock is read,
+ * it may change, even if the value has not been written by the C program.
+ * Using a volatile-qualified type lets the compiler know that the value may
+ * change, and ensures that every access to the real-time clock occurs
+ * (otherwise, an access to the real-time clock may be optimized away or
+ * replaced by a previously read and cached value). In the following code, for
+ * example, the compiler must generate instructions to read the value from port
+ * and then write this value back to port:
+ *
+ * volatile int port;
+ * port = port;
+ *
+ *    Without the volatile qualification, the compiler would see this as a no-op
+ * (a programming statement that does nothing) and potentially eliminate both
+ * the read and the write.
+ *    Also, volatile-qualified types are used for communications with signal
+ * handlers and with setjmp/longjmp. Unlike in Java and other programming
+ * languages, volatile-qualified types in C should not be used for
+ * synchronization between threads.
+ *
+ * restrict
+ *
+ * A restrict-qualified pointer is used to promote optimization. Objects
+ * indirectly accessed through a pointer frequently cannot be fully optimized
+ * because of potential aliasing, which occurs more than one pointer refers to
+ * the same object. Aliasing can inhibit optimizations, because the compiler
+ * can't tell if portions of an object can change values when another apparently
+ * unrelated object is modified, for example.
+ *    The following function copies n bytes from the storage referenced by q to
+ * the storage referenced by p. The function parameters p and q are both
+ * restrict-qualified pointers:
+ *
+ * void f(unsigned int n, int * restrict p, int * restrict q) {
+ *    while (n-- > 0) {
+ *       *p++ = *q++;
+ *    }
+ * }
+ *
+ *    Because both p and q are restrict-qualified pointesr, the compiler can
+ * assume that an object accessed through one of the pointer parameters is not
+ * also accessed through the other. The compiler can make this assessment based
+ * solely on the parameter declarations without analyzing the function body.
+ * Although using restrict-qualified pointers can result in more efficient code,
+ * you must ensure that the pointers do not refer to overlapping memory to
+ * prevent undefined behaviour.
  */
 #include <stdio.h>
 #include <string.h>
@@ -186,6 +405,11 @@ struct sigrecord {
 } sigline, *sigline_p;
 
 void func(int arr[5]) { printf("%d\n", arr[0]); }
+
+void f(unsigned int n, char *restrict p, char *restrict q) {
+  while (n-- > 0)
+    *p++ = *q++;
+}
 
 int main(void) {
   unsigned int i = 0;
@@ -208,5 +432,17 @@ int main(void) {
   sigline_p->signum = 5;
   strcpy(sigline_p->signame, "SIGINT");
   strcpy(sigline_p->sigdesc, "Interrupt from keyboard");
+
+  int k = 12;
+  const int l = 12;
+  const int *ip = &k;
+  const int *jp = &l;
+  *(int *)ip = 42; // ok since k is not const-qualified
+  // If the compiler store l in read-only memory this would crash the program
+  *(int *)jp = 42; // UB: l is const-qualified
+  char buf[1024];
+  char *best_boss = "Knight Artorias";
+  f(strlen(best_boss), buf, best_boss);
+  printf("Best boss in DS1 is %s\n", buf);
   return 0;
 }
