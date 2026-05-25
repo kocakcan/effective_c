@@ -7,14 +7,42 @@ double multiply(double x, double y) { return x * y; }
 static double (*afp[3])(double, double) = {sum, subtract, multiply};
 
 int main(void) {
-  double x = 2.71, y = 3.14;
-  unsigned choice;
+  char choice;
+  double x, y;
+  printf("x = ? \n");
+  scanf(" %lf", &x);
+  printf("y = ? \n");
+  scanf(" %lf", &y);
 
-  printf("What's your choice?\n");
-  scanf("%u", &choice);
-  if (choice >= 0 && choice <= 2)
-    printf("Result = %.2f\n", (*afp[choice])(x, y));
-  else
-    printf("Choice should be between 0-2\n");
+  do {
+    printf("a. Sum\n");
+    printf("b. Subtract\n");
+    printf("c. Multiply\n");
+    printf("> Quit (press 'q' or 'Q')\n");
+    printf("What's your choice?\n");
+    scanf(" %c", &choice);
+
+    switch (choice) {
+    case 'a':
+    case 'A':
+      printf("Result of the sum = %.2f\n", (*afp[0])(x, y));
+      break;
+    case 'b':
+    case 'B':
+      printf("Result of the subtraction = %.2f\n", (*afp[1])(x, y));
+      break;
+    case 'c':
+    case 'C':
+      printf("Result of the multiplication = %.2f\n", (*afp[2])(x, y));
+      break;
+    case 'q':
+    case 'Q':
+      printf("See you!\n");
+      break;
+    default:
+      printf("error: unknown argument %c\n", choice);
+      break;
+    }
+  } while (choice != 'q' && choice != 'Q');
   return 0;
 }
