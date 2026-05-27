@@ -282,6 +282,61 @@
  * overflow, or the possibility of it, should always be considered a defect.
  *
  * Integer Constants
+ *
+ * Integer constants (or integer literals) are constants we use to introduce
+ * particular integer values into a program. For example, you might use them in
+ * a declaration or assignment to initialize a counter to 0. C has three kinds
+ * of integer constants that use different number systems: decimal constants,
+ * octal constants, and hexadecimal constants.
+ *    Decimal constants always begin with a nonzero digit. For example, the
+ * following code uses two decimal constants:
+ *
+ *    unsigned int ui = 71;
+ *    int si;
+ *    si = -12;
+ *
+ *    In this example code, we initialize ui to the decimal constant 71 and
+ * assign si the decimal constant value -12. Use decimal constants when
+ * introducing regular integer values into your code.
+ *    If a constant starts with a 0, optionally followed by digits 0 through 7,
+ * it is an octal constant. Here's an example:
+ *
+ *    int agent = 007;
+ *    int permissions = 0777;
+ *
+ *    In this example, 007 octal equals 7 decimal, and the octal constant 0777
+ * equals the decimal value 511. Octal constants are convenient when dealing
+ * with 3-bit fields, for example.
+ *    You can also create a hexadecimal constant by prefixing a sequence of
+ * decimal digits and the letters a (or A) through f (or F) with 0x or 0X. For
+ * example:
+ *
+ *    int burger = 0xDEADBEEF;
+ *
+ *    Use hexadecimal constants when the constant you are introducing is meant
+ * to represent a bit pattern more than a particular value; for example, when
+ * representing an address. Idiomatically, most hexadecimal constants are
+ * written like 0xDEADBEEF because it resembles a typical hex dump. It's
+ * probably a good idea for you to write all your hexadecimal constants like
+ * this.
+ *    You can also append a suffix to your constant to specify its type. Without
+ * a suffix, a decimal constant is given the int type if it can be represented
+ * as a value in that type. If it cannot be represented as an int, it will be
+ * represented as a long int or long long int. The suffixes are U for unsigned,
+ * L for signed long, and LL for long long. These can be combined. For example
+ * the ULL suffix represents the unsigned long long type. Here are some
+ * examples:
+ *
+ *  unsigned int ui = 71U;
+ *  signed long int sli = 1997L;
+ *  unsigned long long int ui = 42023ULL;
+ *
+ *  If we don't use a suffix, and the integer constant isn't of the required
+ * type, it may be implicitly converted. This may result in a surprising
+ * conversion or a compiler diagnostic, so it's best to correctly specify the
+ * desired type of your integer constants.
+ *
+ * Floating-Point
  */
 #include <limits.h>
 #include <stdio.h>
