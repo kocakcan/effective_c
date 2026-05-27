@@ -172,12 +172,126 @@
  * is clearly detected. By eliminating the subtraction operation in the test, we
  * eliminate the possibility of wraparound occurring during the test.
  *
- * // WARNING: Keep in mind that the width used when wrapping depends on the
- * implementation, which means you can obtain different results on different
- * platforms. Unless you take this into account, your code won't be portable.
+ *  WARNING: Keep in mind that the width used when wrapping depends on the
+ *  implementation, which means you can obtain different results on different
+ *  platforms. Unless you take this into account, your code won't be portable.
+ *
+ * Signed Integers
+ *
+ * Each unsigned integer type (including _Bool) has a corresponding signed
+ * integer type that occupies the same amount of storage. We use signed integers
+ * to represent negative, zero, and positive values, the range of which depends
+ * on the number of bits allocated to the type and representation.
+ *
+ * Representation
+ *
+ * You cannot choose which representation to use; that is determined by the
+ * implementors of C for the various systems. Though all three are still in use,
+ * two's complement is by far the most common representation.
+ *    Signed integer types with width of N can represent any image value in the
+ * range of -2^N-1 to 2^N-1. This means, for example, that an 8-bit value of
+ * type signed char has a range of -128 to 127. Two's complement can represent
+ * an additional most negative value. The most negative value for an 8-bit
+ * signed char is -128, and it's absolute value |-128| cannot be represented as
+ * this type. This leads to some interesting edge cases.
+ *
+ * Overflow
+ *
+ * Overflow occurs when a signed integer operation results in a value that
+ * cannot be represented in the resulting type. For example, the following
+ * implementation of a function-like macro that returns the absolute value of an
+ * integer can overflow:
+ *
+ *  // undefined or wrong for most negative value
+ *  #define Abs(i) ((i) < 0 ? -(i) : (i))
+ * On the surface, this macro appears to correctly implement the absolute value
+ * function by returning the nonnegative value of i without regard to its sign.
+ * We use the conditional (?:) operator to test whether the value of i is
+ * negative. If so, i is negated to -(i); otherwise, it evaluates to the
+ * unmodified value (i).
+ *    Because we've implemented Abs as a function-like macro, it can take an
+ * argument of any type. Of course, invoking this macro with an unsigned integer
+ * is pointless, because unsigned integers can never be negative, so the macro's
+ * output would just reproduce the argument. However, we can invoke the function
+ * with a variety of signed integer and floating-point types, as in the
+ * following invocation:
+ *
+ *  signed int si = -25;
+ *  signed int abs_si = Abs(si);
+ *  printf("%d\n", abs_si); // prints 25
+ *  In this example, we pass an object of type signed int with the value -25 as
+ * an argument to the Abs macro. This invocation expands to the following:
+ *
+ *  signed int si = -25;
+ *  signed int abs_si = ((si) < 0 ? -(si) : (si));
+ *  printf("%d\n", abs_si); // prints 25
+ *    The macro correctly returned the absolute value of -25. So far, so good.
+ * The problem is that the negative of the two's complement most negative value
+ * for a given type cannot be represented in that type, so this use of the Abs
+ * function results in signed integer overflow. Consequently, this
+ * implementation of Abs is defective and can do anything, including
+ * unexpectedly returning a negative value:
+ *
+ *  signed int si = -25;
+ *  signed int abs_si = Abs(si);  // undefined behaviour
+ *  printf("%d\n", abs_si); // prints 25
+ *    So, what should Abs(INT_MIN) return to fixx this behaviour? Signed integer
+ * overflow is undefined behaviour in C, allowing implementations to silently
+ * wrap (the most common behaviour), trap, or both. Traps interrupt execution of
+ * the program so that no further operations are performed. Common architectures
+ * like x86 do a combination of both. Because the behaviour is undefined, no
+ * universally correct solution to this problem exists, but we can at least test
+ * for the possibility of undefined behaviour before it occurs and take
+ * appropriate action.
+ *    To make the absolute-value macro useful for variety of types, we'll add a
+ * type-dependent flag argument to it. The flag represents the *_MIN macro,
+ * which matches the type of the first argument. This value is returned in the
+ * problem case:
+ *
+ *  #define AbsM(i, flag) ((i) >= 0 ? (i) : ((i) == flag) ? (flag) : -(i)))
+ *  signed int si = -25;  // try INT_MIN to trigger the problem case
+ *  if (abs_si == INT_MIN)
+ *    goto recover;
+ *  else
+ *    printf("%d\n", abs_si); // prints 25
+ *
+ *    The AbsM macro tests for the most negative value and simply returns it if
+ * found instead of triggering the undefined behaviour by negating it.
+ *    On some systems, the C Standard Library implements the following int-only
+ * absolute-value function to avoid overflow then the function is passed INT_MIN
+ * as an argument:
+ *
+ *  int abs(int i) {
+ *    return (i >= 0) ? i : -(unsigned)i; // avoids overflow
+ *  }
+ *
+ *    In this case, i is converted to an unsigned int and negated.
+ *    Perhaps surprisingly, unary minus (-) operator is defined for unsigned
+ * integer types. The resulting unsigned integer value is reduced modulo the
+ * number that is one greater than the largest value that can be represented by
+ * the resulting type. Finally, i is implicitly converted back to signed int as
+ * required by the return statement. Because -INT_MIN can't be represented as a
+ * signed int, the result is implementation-defined. This is why this
+ * implementation is used only on some systems, and even on these systems, the
+ * abs function returns an incorrect value.
+ *    The Abs and AbsM implementations use function-like macros to evaluate
+ * their parameters more than once. This can cause surprises when the arguments
+ * cause program state to change. These are called side effects. Function calls,
+ * on the other hand, evaluate each argument only once.
+ *    Unsigned integers have well-defined wraparound behaviour. Signed integer
+ * overflow, or the possibility of it, should always be considered a defect.
+ *
+ * Integer Constants
  */
 #include <limits.h>
 #include <stdio.h>
+
+#define Abs(i) ((i) < 0 ? -(i) : (i))
+#define AbsM(i, flag) ((i) >= 0 ? (i) : ((i) == (flag) ? (flag) : -(i)))
+
+int _abs(int i) {
+  return (i >= 0) ? i : -(unsigned)i; // avoids overflow
+}
 
 int main(void) {
   unsigned int ui = UINT_MAX; // 4,294,967,295 on x86
@@ -185,4 +299,18 @@ int main(void) {
   printf("ui = %u\n", ui); // ui is 0
   ui--;
   printf("ui = %u\n", ui); // ui is 4,294,967,295
+
+  signed int si = INT_MIN;
+  signed int abs_si = Abs(si);
+  printf("%d\n", abs_si);
+  if (si == abs_si)
+    printf("Integer overflow didn't occur\n");
+
+  abs_si = AbsM(si, INT_MIN);
+  printf("%d\n", abs_si);
+  if (si == abs_si)
+    printf("Integer overflow didn't occur\n");
+
+  printf("Result: %d\n", _abs(INT_MIN));
+  return 0;
 }
