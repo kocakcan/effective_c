@@ -46,6 +46,49 @@
  * example, if you were to represent the value 1.0100110 x 2^4 as a
  * floating-point value, the significand refers to the precision bits. 1.0100110
  * and the exponent refers to the power of 2, which is 4 in this example.
+ *
+ * Floating-Point Arithmetic
+ *
+ * Floating-point arithmetic is similar to, and used to model, the arithmetic of
+ * real numbers. However, there are differences to consider. In particular,
+ * unlike the arithmetic of real numbers, floating-point numbers are bounded in
+ * magnitude and have finite precision. Addition and multiplication operations
+ * are not associative, the distributive property doesn't hold, nor do many
+ * other properties that are valid for real numbers.
+ *    Floating-point types cannot represent all real numbers exactly, even when
+ * they can be represented in a small number of decimal digits. For example,
+ * common decimal constants such as 0.1 can't be represented exactly as binary
+ * floating-point numbers. Floating-point types may lack the necessary precision
+ * for various applications such as loop counters or performing financial
+ * calculations.
+ *
+ * Floating-Point Values
+ *
+ * Ordinarily, all of the significand bits in a floating-point type express
+ * significant figures, in addition to a leading 1, which is implied and
+ * omitted, though still considered part of the value. As a special case, to
+ * represent the value 0, the exponent and significand must be both 0; zeros are
+ * signed (+0 and -0) according to the sign bit, so there are two floating-point
+ * zero values: a positive one and a negative one.
+ *
+ * Floating-Point Constants
+ *
+ * A floating-point constant is a decimal or hexadecimal number that represents
+ * a signed real number. You should use floating-point constants to represent
+ * floating-point values that cannot be changed.
+ *
+ *  15.75
+ *  1.575E1 // 15.75
+ *  1573E-2 // 15.75
+ *  -2.5E-3 // -0.0025
+ *  25E-4   // 0.0025
+ *    All floating-point constants have a type. The type is double is
+ * unsuffixed, float if suffixed by the letter f or F, or long double if
+ * suffixed by the letter l or L:
+ *
+ *  10.0  // type double
+ *  10.0F // type float
+ *  10.0L // type long double
  */
 #include <stdio.h>
 #define BUFSIZ 1024
