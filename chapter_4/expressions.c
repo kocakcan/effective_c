@@ -71,4 +71,19 @@
  * type. To prevent values from being truncated, make sure that you choose a
  * sufficiently wide type that can represent any value that might arise, or
  * check for overflow.
+ *
+ * Evaluations
+ *
+ * Now that we've looked at simple assignment, let's step back for a moment and
+ * look at how expressions are actually evaluated. Evaluation mostly means
+ * simplifying an expression down to a single value. However, the evaluation of
+ * an expression can include both value computations and the initiation of side
+ * effects.
+ *    A value computation is the calculation of the value that results from the
+ * evaluation of the expression. Computing the final value may involve
+ * determining the identity of the object or reading the value previously
+ * assigned to an object. For example, the following expression contains several
+ * value computations to determine the identity of i, a, and a[i]:
+ *
+ *  a[i] + f() + 9
  * */
