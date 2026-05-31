@@ -89,7 +89,133 @@
  *  10.0  // type double
  *  10.0F // type float
  *  10.0L // type long double
+ *
+ * Integer Conversion Rank
+ *
+ * An integer conversion rank is a standard rank ordering of integer types used
+ * to determine a common type for computations. Every integer type has an
+ * integer conversion rank that determines when and how conversions are
+ * implicitly performed.
+ *    The C Standard states that every integer type has an integer conversion
+ * rank where the following applies:
+ *
+ * - No two signed integer types have the same rank, even if they have the same
+ * representation.
+ * - The rank of a signed integer type is greater than the rank of any signed
+ * integer type with less precision.
+ * - The rank of long long int is greater than the rank of long int, which is
+ * greater than the rank of int, which is greater than the rank of short int,
+ * which is greater than the rank of signed char.
+ * - The rank of any unsigned integer type equals the rank of the corresponding
+ * signed integer type, if any.
+ * - The rank of char equals the rank of signed char and unsigned char.
+ * - The rank of _Bool is less than rank of all other standard integer types.
+ * - The rank of any enumerated type equals the rank of the compatible integer
+ * type. Each enumerated type is compatible with char, a signed integer type, or
+ * an unsigned integer type.
+ * - The rank of any extended signed integer type relative to another extended
+ * signed integer type with the same precision is implementation-defined but
+ * still subject to the other rules for determining the integer conversion rank.
+ *
+ * Integer Promotions
+ *
+ * A small type s an integer with a lower conversion rank than int or unsigned
+ * int. Integer promotion is the process of converting values of small types to
+ * an int or unsigned int. Integer promotions allow you to use an expression of
+ * a small type in any expression where an int or unsigned int may be used.
+ *    Small integer types (char, short) get automatically converted to int or
+ * unsigned int for before operations for two reasons:
+ *
+ *  1. Performance - CPUs work naturally in int size
+ *  2. Overflow prevention - intermediate calculations have more room
+ * This behaviour can always be overridden with an explicit cast.
+ *
+ * Usual Arithmetic Conversions
+ *
+ * The usual arithmetic conversions are rules for yielding a common type by
+ * balancing both operands of a binary operator to a common type, or balancing
+ * the second and third arguments of the conditional (? :) operator to a common
+ * type.
+ *    Balancing conversions changes one or both operands of different types to
+ * the same type. Many operators that accept integer operands--including *, /,
+ * %, +, -, <, >, <=, >=, ==, !=, &, ^, |, and ? :--perform conversions using
+ * the usual arithmetic conversions. The usual arithmetic conversion first check
+ * whether one of the operands in the balancing conversion is a floating-point
+ * type. If so, it applies the following rules:
+ *
+ *  1. If one type of either operand is long double, the other operand is
+ * converted to long double.
+ *  2. Otherwise, if one type or either operand is double, the other operand is
+ * converted to double.
+ *  3. Otherwise, if the type of either operand is float, the other operand is
+ * converted to float.
+ *  4. Otherwise, the integer promotions are performed on both operands.
+ *
+ *    If one operand has the type double and the other operand has the type int,
+ * for example, the operand of the type int is converted to an object of type
+ * double. If one operand has the type float and the other operand has the type
+ * double, the operand of type float is converted to an object of type double.
+ *    If neither operand is a floating-point type, the following usual
+ * arithmetic conversion rules are applied to the promoted integer operands:
+ *
+ *  1. If both operands have the same type, no further conversion is needed.
+ *  2. Otherwise, if both operands have signed integer types or both have
+ * unsigned integer types, the operand with the type that has the lesser integer
+ * conversion rank is converted to the type of the operand with greater rank. If
+ * one operand has the type int and the other operand has the type long, for
+ * example, the operand of type int is converted to an object of type long.
+ * 3. Otherwise, if the operand that has the unsigned integer type has a rank
+ * greater than or equal to the rank of the other operand's type, then the
+ * operand with the signed integer type is converted to the type of the operand
+ * with the unsigned integer type. For example, if one operand has the type
+ * signed int, and the other operand has the type unsigned int, the operand of
+ * type signed int is converted to an object of type unsigned int.
+ * 4. Otherwise, if the type of the operand with the signed integer type an
+ * represent all of the values of the type of the operand with unsigned integer
+ * type, then the operand with unsigned integer type is converted to the type of
+ * the operand with signed integer type. For example, if one operand has the
+ * type unsigned int and the other operand has the type signed long long, and
+ * the signed long long type can represent all the values of the unsigned int
+ * type, then the operand of type unsigned int is converted to an object of type
+ * signed long long.
+ * 5. Otherwise, both operands are converted to the unsigned integer type
+ * corresponding to the type of the operand with signed integer type.
+ *
+ *    When in doubt, use type casts to explicitly force the conversion that you
+ * intend. That said, try not to overuse explicit conversions because casts can
+ * disable important diagnostics.
+ *
+ * An Example of Implicit Conversion
+ *
+ * The following example illustrates the use of integer conversion rank, integer
+ * promotions, and the usual arithmetic conversions. This code compares the
+ * signed char value c for equality with the unsigned int value ui.
+ *
+ *  unsigned int ui = UINT_MAX;
+ *  signed char c = -1;
+ *  if (c == ui) {
+ *    puts("-1 equals 4,294,967,295");
+ *  }
+ *
+ *     The variable c is of type signed char. Because signed char has a lower
+ * integer conversion rank than int or unsigned int, the value stored in c is
+ * promoted to an object of type signed int when used in the comparison. This is
+ * accomplished by sign-extending the original value of 0xFF to 0xFFFFFFFFF.
+ * Sign extension is used to convert a signed value to a larger-width object.
+ * The sign bit is copied into each bit position of the expanded object. This
+ * operation preserves the sign and magnitude when converting a value from a
+ * smaller to a larger, signed integer type.
+ *    Next, the usual arithmetic conversions are applied. Because the operands
+ * to the equal (==) operator have different signedness and equal rank, the
+ * operand with the signed integer type is converted to the type of the operand
+ * with the unsigned integer type. The comparison is then performed as a 32-bit
+ * unsigned operation. Because UINT_MAX has the same values as the promoted and
+ * converted value of c, the comparison yields 1, and the code snipped prints
+ * the following:
+ *
+ *  -1 equals 4,294,967,295
  */
+#include <limits.h>
 #include <stdio.h>
 #define BUFSIZ 1024
 
@@ -109,5 +235,10 @@ int getline_(char *s, int lim) {
 int main(void) {
   if (getline_(buf, BUFSIZ) > 0)
     printf("Buffer: %s", buf);
+
+  unsigned int ui = UINT_MAX;
+  signed char c = -1;
+  if (c == ui)
+    printf("-1 equals 4,294,967,295\n");
   return 0;
 }

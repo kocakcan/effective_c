@@ -86,4 +86,26 @@
  * value computations to determine the identity of i, a, and a[i]:
  *
  *  a[i] + f() + 9
+ *
+ *    Because f is a function and not an object, the expression f() does not
+ * involve determining the identity of f. The value computations of operands
+ * must occur before the value computation of the result of the operator. In
+ * this example, separate value computations read the value of a[i] and
+ * determine the value returned by the call to function f. A third computation
+ * then sums these values to obtain the value returned by the overall
+ * expression. If a[i] is an array of int, and f() returns an int, the result of
+ * the expression will have the type int.
+ *    Side effects are changes to the state of the execution environment. Side
+ * effects include writing to an object, accessing (reading or writing) a
+ * volatile-qualified object, I/O, assignment, or calling a function that does
+ * any of these things. The previous example can be slightly modified to add an
+ * assignment. Updating the stored value of j is a side effect of the
+ * assignment:
+ *
+ *  int j;
+ *  j = a[i] + f() + 9;
+ *
+ *  The assignment to j is a side effect that changes the state of the execution
+ * environment. Depending on the definition of the f function, the call to f may
+ * also have side effects.
  * */
