@@ -108,4 +108,66 @@
  *  The assignment to j is a side effect that changes the state of the execution
  * environment. Depending on the definition of the f function, the call to f may
  * also have side effects.
+ *
+ * Function Invocation
+ *
+ * A function designator is an expression that has function type and is used to 
+ * invoke a function. In the following function invocation, max is the function
+ * designator:
+ *
+ * 	int x = 11;
+ * 	int y = 21;
+ * 	int max_of_x_and_y = max(x, y);
+ * 	
+ * 	The max function returns the larger of its two arguments. In an express
+ * ion, a function designator is converted to pointer-to-function returning typ
+ * e at compile time. The value of each argument must be of a type that can be 
+ * assigned to an object with (the unqualified version of) the type of its corr
+ * esponding parameter. The number and type of the arguments need to agree with
+ * the number and type of the parameters accepted by the function. Here, that m
+ * eans two integer arguments. C also supports variadic functions, which can ac
+ * cept a variable of number of arguments (the printf function is an example of
+ * a variadic function).
+ * 	We can also pass one function to another, as shown by Listing 4-1:
+ *
+ * 	int f(void) {
+ *		// --snip--
+ *		return 0;
+ *	}
+ *	void g(int (*func)(void)) {
+ *		// --snip--
+ *		if (func() != 0)
+ *			printf("g failed\n");
+ *			// --snip--
+ *	}
+ *	// --snip--
+ *	g(f);	// call g with function-pointer argument
+ *	// --snip--
+ *	Listing 4-1: Passing one function to another function
+ *
+ *	This code passes the address of a function designated by f to another f
+ * unction, g. The function g accepts a function pointer to a function that acc
+ * epts no arguments and returns int. A function passed as an argument is impli
+ * citly converted to a function pointer. The definition of g makes this explic
+ * it; an equivalent declaration is void g(int func(void)).
  * */
+#include <stdio.h>
+
+int f(void) {
+	puts("f is called");
+	return 0;
+}
+
+void g(int (*func)(void)) {
+	if (func() != 0)
+		puts("g failed");
+	// (*func)();
+	func();
+	return;
+}
+
+int main(void) {
+	f();
+	g(f);
+	return 0;
+}
