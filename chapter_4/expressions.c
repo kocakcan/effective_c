@@ -111,17 +111,17 @@
  *
  * Function Invocation
  *
- * A function designator is an expression that has function type and is used to 
+ * A function designator is an expression that has function type and is used to
  * invoke a function. In the following function invocation, max is the function
  * designator:
  *
  * 	int x = 11;
  * 	int y = 21;
  * 	int max_of_x_and_y = max(x, y);
- * 	
+ *
  * 	The max function returns the larger of its two arguments. In an express
  * ion, a function designator is converted to pointer-to-function returning typ
- * e at compile time. The value of each argument must be of a type that can be 
+ * e at compile time. The value of each argument must be of a type that can be
  * assigned to an object with (the unqualified version of) the type of its corr
  * esponding parameter. The number and type of the arguments need to agree with
  * the number and type of the parameters accepted by the function. Here, that m
@@ -150,24 +150,55 @@
  * epts no arguments and returns int. A function passed as an argument is impli
  * citly converted to a function pointer. The definition of g makes this explic
  * it; an equivalent declaration is void g(int func(void)).
+ *
+ * Increment and Decrement Operators
+ *
+ * The increment (++) and decrement (--) operators increment and decrement a
+ * modifiable lvalue, respectively. Both are unary operators, because they take
+ * a single operand.
+ *    These operators can be used as either prefix operators, which come before
+ * the operand, or postfix operators, which come after the operand. The prefix
+ * and postfix operators have different behaviours, which means they are
+ * commonly used as trick questions in quizzes and interviews. A prefix
+ * increment performs the increment before returning the value, whereas a
+ * postfix increment returns the value and then performs the increment. Listing
+ * 4-2 illustrates these behaviours by performing a prefix or postfix increment
+ * or decrement operation and then assigning the result to e.
+ *
+ *  int i = 5;
+ *  int e;      // result of the expression
+ *  e = i++;    // postfix increment: i has the value 6; e has the value 5
+ *  e = i--;    // postfix decrement: i has the value 5; e has the value 6
+ *  e = ++i;    // prefix increment:  i has the value 6; e has the value 6
+ *  e = --i;    // prefix decrement:  i has the value 5; e has the value 5
+ *  Listing 4-2: Prefix and postfix increment and decrement operators
+ *
+ *    The i++ operation in this example returns the unchanged value 5, which is
+ * then assigned to e. The value of i is then incremented as a side effect of
+ * the operation.
+ *    The prefix increment operator increments the value of the operand, the
+ * expression returns the new value of the operand after it has been
+ * incremented. Consequently, the expression ++i is equivalent to i = i + 1,
+ * except that i is evaluated only once. The ++i operation in this example
+ * returns the incremented value 6, which is then assigned to e.
  * */
 #include <stdio.h>
 
 int f(void) {
-	puts("f is called");
-	return 0;
+  puts("f is called");
+  return 0;
 }
 
 void g(int (*func)(void)) {
-	if (func() != 0)
-		puts("g failed");
-	// (*func)();
-	func();
-	return;
+  if (func() != 0)
+    puts("g failed");
+  // (*func)();
+  func();
+  return;
 }
 
 int main(void) {
-	f();
-	g(f);
-	return 0;
+  f();
+  g(f);
+  return 0;
 }
