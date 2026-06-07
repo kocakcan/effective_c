@@ -181,6 +181,82 @@
  * incremented. Consequently, the expression ++i is equivalent to i = i + 1,
  * except that i is evaluated only once. The ++i operation in this example
  * returns the incremented value 6, which is then assigned to e.
+ *
+ * Operator Precedence and Associativity
+ *
+ * In mathematics and computer programming, the order of operations (or operator
+ * precedence) is a collection of rules that dictate the order in which
+ * operations are performed in a given expression. Associativity determines how
+ * operators of the same precedence are grouped when no explicit parantheses are
+ * used. If adjacent operators have equal precedenc, the choice of which
+ * operation to apply first is determined by the associativity. Left-associative
+ * operators cause the operations to be grouped from the left while
+ * right-associative operators cause the operations to be grouped from the
+ * right. Grouping can be thought of as the implicit introduction of
+ * parantheses.
+ *
+ *  Precedence  Operator      Description  Associativity 0           (...)
+ *   Forced grouping                                 Left 1           ++ --
+ *    Postfix increment and decrement
+ *              ()            Function call
+ *              []            Array subscripting
+ *              .             Structure and union member access
+ *              ->            Structure and union member access through
+ *                            pointer
+ *              (type){list}  Compound literal
+ *  2           ++ --         Prefix increment and decrement  Right
+ *              + -           Unary plust and minus
+ *              ! ~           Logical NOT and bitwise NOT
+ *              (type)        Type cast
+ *              *             Indirection (dereference)
+ *              &             Address-of
+ *              sizeof        Size of
+ *              _Alignof      Alignment requirement
+ *  3           * / %         Multiplication, division, and remainder  Left 4
+ *        + -           Addition and subtraction 5           << >>  Bitwise left
+ * shift and right shift 6           < <=          Relational operators < and <=
+ *              > >=          Relational operators > and >=
+ *  7           == !=         Equal to and not equal to
+ *  8           &             Bitwise AND
+ *  9           ^             Bitwise XOR (exclusive or)
+ *  10          |             Bitwise OR (inclusive or)
+ *  11          &&            Logical AND
+ *  12          ||            Logical OR
+ *  13          ?:            Conditional operator
+ *  14          =             Simple assignment
+ *              += -=         Assignment by sum and difference
+ *              *= /= %/      Assignment by product, quotient, and remainder
+ *              <<= >>=       Assignment by bitwise left shitf and right shift
+ *              &= ^= |=      Assignment by bitwise AND, XOR, and OR
+ *  15          ,             Expression sequencing
+ *
+ *     Sometimes operator precedence can be intuitive, and sometimes it can be
+ * misleading. For example, the postfix ++ and -- operators have higher
+ * precedence than both prefix ++ and -- operators, which in turn have the same
+ * precedence as the unary * operator. Moreover, if p is a pointer, then *p++ is
+ * equivalent to *(p++), and ++*p is equivalent to ++(*p), because both the
+ * prefix ++ operator and the unary * operator are right-associative. If two
+ * operators have the same precedence and association, they are evaluated from
+ * left to right. Listing 4-3 illustrates the precedence rules among the
+ * operators.
+ *
+ *  char abc[] = "abc";
+ *  char xyz[] = "xyz";
+ *
+ *  char *p = abc;
+ *  printf("%c", ++*p);
+ *
+ *  p = xyz;
+ *  printf("%c", *p++);
+ *  Listing 4-3: Operator precedence
+ *    The pointer in the expression ++*p is first dereferenced, producing the
+ * character 'a'. This value is then incremented, resulting in the character
+ * 'b'. On the other hand, the pointer in the expresion *p++ is incremented
+ * first, so it refers to the 'y' character. However, the result of postfix
+ * increment operators is the value of the operand so that the original pointer
+ * value is dereferenced, producing the 'x' character. Consequently, this code
+ * prints outs the character bx. You can use parantheses () to change or clarify
+ * the order of operations.
  * */
 #include <stdio.h>
 
@@ -200,5 +276,22 @@ void g(int (*func)(void)) {
 int main(void) {
   f();
   g(f);
+  char abc[] = "abc";
+  char xyz[] = "xyz";
+
+  char *p = abc;
+  printf("%c", ++*p);
+  p = xyz;
+  printf("%c", *p++);
+
+  int nums[] = {0, 1, 2};
+  int *ip = nums;
+  int *op = nums;
+
+  // printf("\n%d\n", *ip++);
+  printf("%d\n", *(ip++));
+
+  // printf("%d\n", ++*op);
+  printf("%d\n", ++(*op));
   return 0;
 }
