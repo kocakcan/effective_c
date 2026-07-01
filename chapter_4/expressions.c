@@ -340,6 +340,44 @@
  * cache values in registers, allowing for faster overall execution. Function
  * executions, on the other hand, are indeterminately sequenced and do not
  * interleave with each other.
+ *
+ * Sequence Points
+ *
+ * A sequence point is the juncture at which all side effects will have
+ * completed. These are implicitly defined by the language, but you can control
+ * where they occur by the way you specify your program logic.
+ * 	A sequence point occurs between the evaluation of one full expression
+ * (an expression that is not part of another expression or declarator) and the
+ * next full expression to be evaluated. A sequence point also occurs upon
+ * entering or exiting a called function.
+ * 	If a side effect is unsequenced relative to either a different side
+ * effect on the same scalar object, the code has undefined behaviour. A scalar
+ * type is either an arithmetic type or pointer type. The expression i++ * i++
+ * in the following code snippet performs two unsequenced operations on i:
+ *
+ * 	int i = 5;
+ * 	printf("Result = %d\n", i++ * i++);
+ * You might think this code will produce the value 30, but because this code
+ * has undefined behaviour, this outcome isn't guaranteed. Conservatively, we
+ * can ensure that side effects have completed before the value is read by
+ * placing every side-effecting operation in its own full expression. We can
+ * rewrite this code as follows to eliminate the undefined behaviour.
+ *
+ * 	int i = 5;
+ * 	int j = i++;
+ * 	int k = i++;
+ * 	printf("Result = %d\n", j * k);
+ *
+ * This code now contains a sequence point between every side-effecting
+ * operation. However, it's impossible to tell whether this rewritten code
+ * represent the original intent of the programmer, because the original code
+ * had no defined meaning. If you choose to omit sequence points, you must be
+ * sure you completely understand the sequencing of side effects. This same code
+ * can also be written as follows without changing the behaviour:
+ *
+ * 	int i = 5;
+ * 	int j = i++;
+ * 	printf("Result = %d\n", j * i++);
  * */
 #include <stdio.h>
 
