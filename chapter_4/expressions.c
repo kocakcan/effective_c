@@ -257,6 +257,89 @@
  * value is dereferenced, producing the 'x' character. Consequently, this code
  * prints outs the character bx. You can use parantheses () to change or clarify
  * the order of operations.
+ *
+ * Order of Evaluation
+ *
+ * The order of evaluation of the operands of any C operator, including the
+ * order of evaluation of any subexpressions, is generally unspecified. The
+ * compiler will evaluate them in any order, and may choose a different order
+ * when the same expression is evaluated again. This latitude allows the
+ * compiler to produce faster code by choosing the most efficient order. The
+ * order of evaluation is constrained by operator precedence and associativity.
+ * 	Listing 4-4 demonstrates the order of evaluation for function arguments.
+ * We invoke the max function we defined earlier with two arguments, which are
+ * the result of calling functions f and g, respectively. The order of
+ * evaluation of the expressions passed to max is unspecified, meaning that f
+ * and g could be called in either order.
+ *
+ * 	int glob;	// static storage initialized to 0
+ *
+ * 	int f(void) {
+ *		return glob + 10;
+ *	}
+ *
+ *	int g(void) {
+ *		glob = 42;
+ *		return glob;
+ *	}
+ *
+ *	int main(void) {
+ *		int max_value = max(f(), g());
+ *		// --snip--
+ *	}
+ *	Listing 4-4: Order of evaluation for function arguments
+ * The global variable glob is accessed by both functions f and g, meaning they
+ * rely on shared state. When calculating their return value, the values passed
+ * as arguments to max may differ between compilations. If f is called first, it
+ * will return 10, but if it is called last, it will return 52. Function g
+ * always returns 42 regardless of the order of evaluation. Consequently, the
+ * max function (which returns the greater of the two values) may return either
+ * 42 or 52, depending on the order of evaluation of its arguments. The only
+ * sequencing guarantees provided by this code are that both f and g are called
+ * before max, and that the executions of f and g do not interleave.
+ * 	This code can be rewritten to ensure it always behaves in a predictable,
+ * portable manner:
+ *
+ * 	int f_val = f();
+ * 	int g_val = g();
+ * 	int max_value = max(f_val, g_val);
+ *
+ * 	In this revised program, f is called to initialize the variable f_val.
+ * This is guaranteed to be sequenced before the execution of g, which is called
+ * in the subsequent declaration to initialize the variable g_val. If one
+ * evaluation is sequenced before another evaluation, the first evaluation must
+ * complete before the second evaluation can begin. You can use sequence points
+ * to guarantee, for example, that an object will be written before it is read
+ * as part of a separate evaluation. The execution of f is guaranteed to be
+ * sequenced before the execution of g because a sequence point exists between
+ * the evaluation of one full expression and the next full expression.
+ *
+ * Unsequenced and Indeterminately Sequenced Evaluations
+ *
+ * The executions of unsequenced evaluations can interleave, meaning that the
+ * instructions can be executed in any order, provided that the execution is
+ * sequentially consistent that reads and writes are performed in the order
+ * specified by the program.
+ * 	Some evaluations are indeterminately sequenced, which means they cannot
+ * interleave but can still be executed in any order. For example, the following
+ * statement contains several value computations and side effects:
+ *
+ * 	printf("%d\n", ++i, ++j * --k);
+ *
+ * 	The values of i, j, and k must be read before their values can be
+ * incremented or decremented. This means that the reading of i must be
+ * sequenced before the increment side effect, for example. Similarly, all side
+ * effects for the operands of the multiplication operation need to complete
+ * before the multiplication can occur. Finally, the multiplication has to
+ * complete before the addition because of operator precedence rules, and all
+ * side effects must complete for the operands of the addition operation before
+ * it can occur. These constraints produce a partial ordering among these
+ * operations, because they don't require that j is incremented before k is
+ * decremented, for example. Unsequenced evaluations in this expression can be
+ * performed in any order. This allows the compiler to reorder operations and
+ * cache values in registers, allowing for faster overall execution. Function
+ * executions, on the other hand, are indeterminately sequenced and do not
+ * interleave with each other.
  * */
 #include <stdio.h>
 
