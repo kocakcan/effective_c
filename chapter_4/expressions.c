@@ -378,8 +378,40 @@
  * 	int i = 5;
  * 	int j = i++;
  * 	printf("Result = %d\n", j * i++);
- * */
+ *
+ * sizeof Operator
+ *
+ * You can use the sizeof operator to find the size in bytes of its operand;
+ * specifically, it returns an unsigned integer of size_t type that represents
+ * the size. Knowing the correct size of an operand is necessary for most memory
+ * operations, including allocating and copying storage. The size_t type is
+ * defined in <stddef.h> as well as other header files. You'll need to include
+ * one of these header files to compile any code that references size_t.
+ * 	You can pass the sizeof operator an unevaluated expression of a complete
+ * object type or a paranthesized name of such a type:
+ *
+ * 	int i;
+ * 	size_t i_size = sizeof i;	// the size of the object i
+ * 	size_t int_size = sizeof(int);	// the size of the type int
+ *
+ * 	It is always safe paranthesize the operand to sizeof, because
+ * parenthesizing an expression does not change the way the size of the
+ * operand is calculated. The result of invoking the sizeof operator is a
+ * constant expression unless the operand is a variable-length array. The
+ * operand to sizeof is not evaluated.
+ * 	If you need to determine the number of bits of storage available, you
+ * can multiply the size of an object by CHAR_BIT, which gives the number of
+ * bits contained in a byte. For example, the expression CHAR_BIT * sizeof(int)
+ * will produce the number of bits in an object of type int.
+ * 	Object types other than character types can include padding as well as
+ * value representation bits. Different target platforms can pack bytes into
+ * multiple-byte words in different ways, called endiannes. All this variation
+ * implies that, for interhost communication, you should adopt a standard for
+ * the external format and use format conversion functions to marshal arrays of
+ * external data to and from multiple-byte native objects.
+ */
 #include <stdio.h>
+#include <limits.h>
 
 int f(void) {
   puts("f is called");
@@ -414,5 +446,6 @@ int main(void) {
 
   // printf("%d\n", ++*op);
   printf("%d\n", ++(*op));
+  printf("The number of bits in an object of type int: %zu\n", CHAR_BIT * sizeof(int));
   return 0;
 }
